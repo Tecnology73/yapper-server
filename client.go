@@ -53,13 +53,9 @@ const (
 )
 
 type Message struct {
-	Client  *Client
-	Payload Payload
-}
-
-type Payload struct {
-	Type MessageType     `json:"type"`
-	Data json.RawMessage `json:"data"`
+	Client *Client
+	Type   MessageType
+	Data   json.RawMessage
 }
 
 func (c *Client) readPump() {
@@ -82,18 +78,11 @@ func (c *Client) readPump() {
 			break
 		}
 
-		msg := Message{
-			Client:  c,
-			Payload: Payload{},
+		c.hub.message <- Message{
+			Client: c,
+			Type:   MessageType(message[0]),
+			Data:   message[1:],
 		}
-		//err = json.Unmarshal(bytes.TrimSpace(bytes.Replace(message, newline, space, -1)), &payload)
-		err = json.Unmarshal(message, &msg.Payload)
-		if err != nil {
-			log.Printf("Error handleMessage#Unmarshal: %v", err)
-			return
-		}
-
-		c.hub.message <- msg
 	}
 }
 
@@ -114,7 +103,7 @@ func (c *Client) writePump() {
 				return
 			}
 
-			w, err := c.conn.NextWriter(websocket.TextMessage)
+			w, err := c.conn.NextWriter(websocket.BinaryMessage)
 			if err != nil {
 				return
 			}

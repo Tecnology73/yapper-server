@@ -5,7 +5,8 @@ type WelcomePacket struct {
 }
 
 type WelcomeResponsePacket struct {
-	Id uint64 `json:"id"`
+	Id    uint64            `json:"id"`
+	Users map[uint64]string `json:"users"`
 }
 
 type UserConnectedPacket struct {
